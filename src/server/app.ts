@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createMiddleware } from 'hono/factory';
+import { serveStatic } from '@hono/node-server/serve-static';
 import type { Config } from './config.js';
 import type { DB } from './db/client.js';
 import type { AppEnv } from './types.js';
@@ -41,12 +42,14 @@ export function buildApp({ db, config }: BuildAppOptions) {
   app.route('/pages', pagesRoutes);
   app.route('/admin', adminRoutes);
 
+  // Serve built frontend in production (dist/client/ from project root)
+  app.use('/*', serveStatic({ root: './dist/client' }));
+  app.get('/*', serveStatic({ path: 'index.html', root: './dist/client' }));
+
   app.onError((err, c) => {
     console.error(err);
     return c.json({ error: 'Internal server error' }, 500);
   });
-
-  app.notFound((c) => c.json({ error: 'Not found' }, 404));
 
   return app;
 }

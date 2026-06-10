@@ -1,37 +1,39 @@
-# Pagepad
+# Notion Notes
 
-Monorepo containing the Pagepad frontend and backend.
-
-## Structure
-
-```
-frontend/   React + Vite app (port 5173)
-backend/    Node + Hono + SQLite API (port 8787)
-```
+Full-stack note-taking app. React + Vite frontend, Node + Hono + SQLite backend — one repo, one command.
 
 ## Quick start
 
-Open two terminals.
-
-**Terminal 1 — backend**
 ```bash
-cd backend
 npm install
 cp .env.example .env   # set ADMIN_TOKEN to any random string
 npm run db:migrate
 npm run dev
 ```
 
-**Terminal 2 — frontend**
+Open http://localhost:5173.
+
+The Vite dev server proxies all API calls (`/auth`, `/me`, `/pages`, `/admin`) to the Hono backend on port 8787.
+
+## Production build
+
 ```bash
-cd frontend
-npm install
-npm run dev
+npm run build          # compiles frontend → dist/client/
+npm start              # Hono serves API + static files on PORT (default 8787)
 ```
 
-Then open http://localhost:5173.
+## Environment variables
 
-## More detail
+| Variable | Default | Notes |
+|---|---|---|
+| `PORT` | `8787` | Backend listen port |
+| `DATABASE_URL` | `./notion-notes.db` | SQLite file path |
+| `ADMIN_TOKEN` | _(empty)_ | Enables `/admin` endpoints |
+| `CORS_ORIGIN` | `*` | Restrict in production |
+| `FREE_PAGE_LIMIT` | `5` | Free-tier page cap |
 
-- [frontend/README.md](frontend/README.md)
-- [backend/README.md](backend/README.md)
+## Tests
+
+```bash
+npm test
+```

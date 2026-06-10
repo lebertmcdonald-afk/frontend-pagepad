@@ -1,10 +1,10 @@
-// Thin client for the Pagepad backend (Node + Hono + SQLite).
+// Thin client for the Notion Notes backend (Node + Hono + SQLite).
 // Auth model: anonymous device token. On first load we POST /auth/token,
-// store the token in localStorage under "pagepad-token", and send
+// store the token in localStorage under "notion-notes-token", and send
 // Authorization: Bearer <token> on every authenticated request.
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8787'
-const TOKEN_KEY = 'pagepad-token'
+const API = import.meta.env.VITE_API_URL || ''
+const TOKEN_KEY = 'notion-notes-token'
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY)

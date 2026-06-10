@@ -1,14 +1,14 @@
 {
-  "name": "notion-notes-backend",
+  "name": "notion-notes",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "build": "tsc",
+    "dev": "concurrently -n vite,api -c cyan,green \"vite\" \"tsx watch src/server/server.ts\"",
+    "build": "vite build",
+    "start": "tsx src/server/server.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate": "tsx src/server/db/migrate.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -17,14 +17,19 @@
     "better-sqlite3": "^11.7.0",
     "drizzle-orm": "^0.38.2",
     "hono": "^4.6.14",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^9.0.0",
     "drizzle-kit": "^0.30.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
+    "vite": "^5.4.0",
     "vitest": "^2.1.8"
   }
 }
