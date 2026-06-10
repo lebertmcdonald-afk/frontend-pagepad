@@ -52,7 +52,7 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-head">
-        <span className="wordmark">Pagepad</span>
+        <span className="wordmark">Notion Notes</span>
         <button
           className="new-btn"
           onClick={onCreate}

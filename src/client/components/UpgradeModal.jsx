@@ -42,7 +42,7 @@ export default function UpgradeModal({ userId, onClose, onUpgraded }) {
           You&apos;ve filled your free workspace
         </h2>
         <p className="modal-sub">
-          The free plan holds five pages. Upgrade to Pagepad Pro to keep going.
+          The free plan holds five pages. Upgrade to Notion Notes Pro to keep going.
         </p>
 
         <div className="tier-compare">

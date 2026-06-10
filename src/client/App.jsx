@@ -44,8 +44,8 @@ export default function App() {
         if (cancelled) return
         setErrorMsg(
           err instanceof ApiError
-            ? `Couldn't reach Pagepad (${err.status}). Is the backend running on the API URL?`
-            : "Couldn't reach the Pagepad backend. Check that it's running."
+            ? `Couldn't reach Notion Notes (${err.status}). Is the backend running on the API URL?`
+            : "Couldn't reach the Notion Notes backend. Check that it's running."
         )
         setStatus('error')
       }
@@ -149,7 +149,7 @@ export default function App() {
   if (status === 'loading') {
     return (
       <div className="boot">
-        <div className="wordmark">Pagepad</div>
+        <div className="wordmark">Notion Notes</div>
         <p className="boot-note">Opening your workspace…</p>
       </div>
     )
@@ -158,7 +158,7 @@ export default function App() {
   if (status === 'error') {
     return (
       <div className="boot">
-        <div className="wordmark">Pagepad</div>
+        <div className="wordmark">Notion Notes</div>
         <p className="boot-error">{errorMsg}</p>
         <button className="btn" onClick={() => window.location.reload()}>
           Try again
