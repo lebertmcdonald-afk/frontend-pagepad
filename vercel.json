@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run build --cache /tmp/npm-cache-notion",
+  "outputDirectory": "dist/client",
+  "installCommand": "npm install --cache /tmp/npm-cache-notion"
+}
