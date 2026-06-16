@@ -14,9 +14,16 @@ function PageMeter({ pageCount, pageLimit, isPro, onUpgrade }) {
 
   const dots = Array.from({ length: pageLimit }, (_, i) => i < pageCount)
   const atLimit = pageCount >= pageLimit
+  // Soft warning starts one page before the cap, so users feel the wall
+  // approaching instead of being surprised by a 402 on the next create.
+  const nearLimit = !atLimit && pageCount === pageLimit - 1
+
+  let className = 'meter'
+  if (atLimit) className += ' meter-at-limit'
+  else if (nearLimit) className += ' meter-near-limit'
 
   return (
-    <div className="meter">
+    <div className={className}>
       <div className="meter-dots" aria-hidden="true">
         {dots.map((filled, i) => (
           <span key={i} className={filled ? 'dot dot-filled' : 'dot'} />
@@ -32,6 +39,19 @@ function PageMeter({ pageCount, pageLimit, isPro, onUpgrade }) {
           </button>
         )}
       </div>
+      {nearLimit && (
+        <p className="meter-hint">
+          1 page left on free —{' '}
+          <button className="meter-hint-link" onClick={onUpgrade}>
+            upgrade for unlimited
+          </button>
+        </p>
+      )}
+      {atLimit && (
+        <p className="meter-hint meter-hint-strong">
+          You've used all your free pages.
+        </p>
+      )}
     </div>
   )
 }

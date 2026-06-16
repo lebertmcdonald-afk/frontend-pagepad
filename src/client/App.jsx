@@ -22,7 +22,11 @@ export default function App() {
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved
   const [upgradeOpen, setUpgradeOpen] = useState(false)
 
-  const saveTimer = useRef(null)
+  // Autosave state keyed by page id so switching pages mid-debounce
+  // can't drop the previous page's pending save, and rapid edits to
+  // different fields merge into a single PATCH instead of clobbering.
+  const saveTimers = useRef(new Map()) // id -> timeoutId
+  const pendingFields = useRef(new Map()) // id -> { title?, content? }
   const savedTimer = useRef(null)
 
   const isPro = !!me?.user?.isPro
@@ -82,16 +86,30 @@ export default function App() {
 
   // Autosave: debounce edits, then PATCH. Title and content both flow here.
   function handleEdit(fields) {
+    const id = activeId
+    if (!id) return
+
     setPages((prev) =>
-      prev.map((p) => (p.id === activeId ? { ...p, ...fields } : p))
+      prev.map((p) => (p.id === id ? { ...p, ...fields } : p))
     )
     setSaveState('saving')
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(async () => {
+
+    // Merge with any pending fields for this page so a quick title-then-body
+    // edit gets PATCHed as one combined update, not two competing ones.
+    const merged = { ...(pendingFields.current.get(id) || {}), ...fields }
+    pendingFields.current.set(id, merged)
+
+    const existing = saveTimers.current.get(id)
+    if (existing) clearTimeout(existing)
+
+    const timer = setTimeout(async () => {
+      saveTimers.current.delete(id)
+      const toSave = pendingFields.current.get(id)
+      pendingFields.current.delete(id)
       try {
-        const updated = await updatePage(activeId, fields)
+        const updated = await updatePage(id, toSave)
         setPages((prev) =>
-          prev.map((p) => (p.id === activeId ? { ...p, ...updated } : p))
+          prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
         )
         setSaveState('saved')
         if (savedTimer.current) clearTimeout(savedTimer.current)
@@ -101,9 +119,16 @@ export default function App() {
         setErrorMsg('Changes could not be saved. Check your connection.')
       }
     }, 400)
+    saveTimers.current.set(id, timer)
   }
 
   async function handleDelete(id) {
+    // Cancel any pending autosave for this page so we don't PATCH a deleted row.
+    const pendingTimer = saveTimers.current.get(id)
+    if (pendingTimer) clearTimeout(pendingTimer)
+    saveTimers.current.delete(id)
+    pendingFields.current.delete(id)
+
     const remaining = pages.filter((p) => p.id !== id)
     setPages(remaining)
     if (activeId === id) setActiveId(remaining[0]?.id ?? null)
