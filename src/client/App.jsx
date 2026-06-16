@@ -7,6 +7,7 @@ import {
   updatePage,
   deletePage,
   exportPage,
+  exportAllPages,
   ApiError,
 } from './api.js'
 import Sidebar from './components/Sidebar.jsx'
@@ -21,6 +22,11 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState('')
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved
   const [upgradeOpen, setUpgradeOpen] = useState(false)
+  // One-time intro card explaining what Notes is. Hidden once dismissed
+  // (persisted in localStorage) so returning users don't see it again.
+  const [showIntro, setShowIntro] = useState(
+    () => typeof window !== 'undefined' && !localStorage.getItem('notion-notes-intro-seen')
+  )
 
   // Autosave state keyed by page id so switching pages mid-debounce
   // can't drop the previous page's pending save, and rapid edits to
@@ -140,6 +146,53 @@ export default function App() {
     }
   }
 
+  // Drag-to-reorder: move srcId to dstId's slot, renumber everyone, and
+  // PATCH only the items whose position actually changed.
+  async function handleReorder(srcId, dstId) {
+    const srcIdx = pages.findIndex((p) => p.id === srcId)
+    const dstIdx = pages.findIndex((p) => p.id === dstId)
+    if (srcIdx === -1 || dstIdx === -1 || srcIdx === dstIdx) return
+
+    const reordered = [...pages]
+    const [moved] = reordered.splice(srcIdx, 1)
+    reordered.splice(dstIdx, 0, moved)
+
+    const prevPositions = new Map(pages.map((p) => [p.id, p.position]))
+    const renumbered = reordered.map((p, i) => ({ ...p, position: i }))
+    setPages(renumbered)
+
+    const changed = renumbered.filter((p) => prevPositions.get(p.id) !== p.position)
+    try {
+      await Promise.all(
+        changed.map((p) => updatePage(p.id, { position: p.position }))
+      )
+    } catch {
+      setErrorMsg('Could not save the new order.')
+    }
+  }
+
+  async function handleExportAll() {
+    try {
+      const { filename, blob } = await exportAllPages()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        setUpgradeOpen(true)
+      } else if (err instanceof ApiError && err.status === 404) {
+        setErrorMsg('No pages to export yet.')
+      } else {
+        setErrorMsg('Could not export your pages.')
+      }
+    }
+  }
+
   async function handleExport(id) {
     try {
       const { filename, markdown } = await exportPage(
@@ -200,10 +253,17 @@ export default function App() {
         onSelect={setActiveId}
         onCreate={handleCreate}
         onDelete={handleDelete}
+        onReorder={handleReorder}
         pageCount={me?.pageCount ?? pages.length}
         pageLimit={me?.pageLimit ?? null}
         isPro={isPro}
         onUpgrade={() => setUpgradeOpen(true)}
+        onExportAll={isPro ? handleExportAll : undefined}
+        showIntro={showIntro}
+        onDismissIntro={() => {
+          localStorage.setItem('notion-notes-intro-seen', '1')
+          setShowIntro(false)
+        }}
       />
 
       <main className="editor-pane">

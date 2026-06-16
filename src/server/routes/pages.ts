@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, sql } from 'drizzle-orm';
+import JSZip from 'jszip';
 import { pages } from '../db/schema.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AppEnv } from '../types.js';
@@ -89,6 +90,55 @@ pagesRoutes.post('/', async (c) => {
     .get();
 
   return c.json({ page: inserted }, 201);
+});
+
+// Pro-only: download every note in one zip. Declared before /:id so the
+// literal path wins the route match.
+pagesRoutes.get('/export-all', async (c) => {
+  const db = c.get('db');
+  const user = c.get('user');
+
+  if (!user.isPro) {
+    return c.json({ error: 'Export requires Pro tier', upgradeRequired: true }, 403);
+  }
+
+  const rows = db
+    .select()
+    .from(pages)
+    .where(eq(pages.userId, user.id))
+    .orderBy(asc(pages.position), asc(pages.createdAt))
+    .all();
+
+  if (rows.length === 0) {
+    return c.json({ error: 'No pages to export' }, 404);
+  }
+
+  const zip = new JSZip();
+  // Multiple untitled pages would collide on the same filename; suffix dupes
+  // with an incrementing counter so every entry lands in the archive.
+  const used = new Set<string>();
+  for (const row of rows) {
+    const title = row.title || 'Untitled';
+    const base = sanitizeFilename(title);
+    let filename = `${base}.md`;
+    let n = 2;
+    while (used.has(filename)) {
+      filename = `${base}-${n}.md`;
+      n += 1;
+    }
+    used.add(filename);
+    zip.file(filename, `# ${title}\n\n${row.content}\n`);
+  }
+
+  const buffer = await zip.generateAsync({ type: 'nodebuffer' });
+  return new Response(buffer, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': 'attachment; filename="notion-notes.zip"',
+      'Content-Length': String(buffer.byteLength),
+    },
+  });
 });
 
 pagesRoutes.get('/:id', (c) => {

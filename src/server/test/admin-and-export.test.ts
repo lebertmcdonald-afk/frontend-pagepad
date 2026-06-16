@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import JSZip from 'jszip';
 import { createTestApp, createUserAndToken, authHeader } from './helpers.js';
 
 describe('/me', () => {
@@ -120,5 +121,61 @@ describe('markdown export', () => {
     expect(exp.headers.get('Content-Disposition')).toContain('My Page.md');
     const text = await exp.text();
     expect(text).toBe('# My Page\n\nHello there\n');
+  });
+});
+
+describe('export-all (zip)', () => {
+  it('blocks free users with 403', async () => {
+    const { app } = createTestApp();
+    const { token } = await createUserAndToken(app);
+
+    const res = await app.request('/pages/export-all', { headers: authHeader(token) });
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 when the Pro user has no pages', async () => {
+    const { app } = createTestApp();
+    const { token, userId } = await createUserAndToken(app);
+
+    await app.request(`/admin/users/${userId}/upgrade`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer test-admin', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isPro: true }),
+    });
+
+    const res = await app.request('/pages/export-all', { headers: authHeader(token) });
+    expect(res.status).toBe(404);
+  });
+
+  it('returns a zip of all pages for Pro users and dedupes filenames', async () => {
+    const { app } = createTestApp();
+    const { token, userId } = await createUserAndToken(app);
+
+    await app.request(`/admin/users/${userId}/upgrade`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer test-admin', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isPro: true }),
+    });
+
+    for (const title of ['Alpha', '', '']) {
+      await app.request('/pages', {
+        method: 'POST',
+        headers: { ...authHeader(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content: `body for ${title || 'untitled'}` }),
+      });
+    }
+
+    const res = await app.request('/pages/export-all', { headers: authHeader(token) });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('application/zip');
+    expect(res.headers.get('Content-Disposition')).toContain('notion-notes.zip');
+
+    const buf = Buffer.from(await res.arrayBuffer());
+    const zip = await JSZip.loadAsync(buf);
+    const names = Object.keys(zip.files).sort();
+    expect(names).toEqual(['Alpha.md', 'Untitled-2.md', 'Untitled.md']);
+
+    const alpha = await zip.file('Alpha.md')!.async('string');
+    expect(alpha).toBe('# Alpha\n\nbody for Alpha\n');
   });
 });
