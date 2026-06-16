@@ -5,6 +5,7 @@ import { adminUpgrade, ApiError } from '../api.js'
 // manually through the admin endpoint), so this modal explains the value and,
 // for demos, lets you simulate the upgrade with the backend's ADMIN_TOKEN.
 export default function UpgradeModal({ userId, onClose, onUpgraded }) {
+  const [view, setView] = useState('pitch') // 'pitch' | 'success'
   const [showDev, setShowDev] = useState(false)
   const [adminToken, setAdminToken] = useState('')
   const [working, setWorking] = useState(false)
@@ -15,7 +16,8 @@ export default function UpgradeModal({ userId, onClose, onUpgraded }) {
     setDevError('')
     try {
       await adminUpgrade(userId, adminToken.trim(), true)
-      onUpgraded()
+      // PRD P2: show a confirmation screen instead of closing silently.
+      setView('success')
     } catch (err) {
       if (err instanceof ApiError && err.status === 503) {
         setDevError('Admin endpoints are disabled (ADMIN_TOKEN is unset on the server).')
@@ -38,70 +40,118 @@ export default function UpgradeModal({ userId, onClose, onUpgraded }) {
         aria-labelledby="upgrade-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="upgrade-title" className="modal-title">
-          You&apos;ve filled your free workspace
-        </h2>
-        <p className="modal-sub">
-          The free plan holds five pages. Upgrade to Notion Notes Pro to keep going.
-        </p>
-
-        <div className="tier-compare">
-          <div className="tier">
-            <span className="tier-name">Free</span>
-            <ul>
-              <li>Up to 5 pages</li>
-              <li>Clean writing &amp; autosave</li>
-              <li>Sidebar navigation</li>
+        {view === 'success' ? (
+          <>
+            <div className="success-badge" aria-hidden="true">
+              <span className="pro-pill">Pro</span>
+            </div>
+            <h2 id="upgrade-title" className="modal-title">
+              You&apos;re on Pro.
+            </h2>
+            <p className="modal-sub">Here&apos;s what just unlocked:</p>
+            <ul className="unlocked-list">
+              <li>
+                <span className="unlocked-bullet" aria-hidden="true">
+                  ✓
+                </span>
+                <span>
+                  <strong>Unlimited pages.</strong> The 5-page cap is gone.
+                </span>
+              </li>
+              <li>
+                <span className="unlocked-bullet" aria-hidden="true">
+                  ✓
+                </span>
+                <span>
+                  <strong>Export to Markdown.</strong> Download any page as a
+                  clean .md file.
+                </span>
+              </li>
+              <li>
+                <span className="unlocked-bullet" aria-hidden="true">
+                  ✓
+                </span>
+                <span>
+                  <strong>Export all as zip.</strong> Pull every note out in
+                  one click.
+                </span>
+              </li>
             </ul>
-          </div>
-          <div className="tier tier-pro">
-            <span className="tier-name">
-              Pro <span className="pro-pill">Pro</span>
-            </span>
-            <ul>
-              <li>Unlimited pages</li>
-              <li>Export any page as Markdown</li>
-              <li>Everything in Free</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="modal-actions">
-          <button className="btn" onClick={onClose}>
-            Not now
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowDev((v) => !v)}
-          >
-            Upgrade to Pro
-          </button>
-        </div>
-
-        {showDev && (
-          <div className="dev-upgrade">
-            <p className="dev-note">
-              Billing isn&apos;t wired up for this build. To unlock Pro for
-              testing, paste the backend&apos;s admin token.
-            </p>
-            <div className="dev-row">
-              <input
-                className="dev-input"
-                type="password"
-                placeholder="ADMIN_TOKEN"
-                value={adminToken}
-                onChange={(e) => setAdminToken(e.target.value)}
-              />
-              <button
-                className="btn btn-primary"
-                disabled={!adminToken.trim() || working}
-                onClick={simulateUpgrade}
-              >
-                {working ? 'Unlocking…' : 'Unlock Pro'}
+            <div className="modal-actions modal-actions-single">
+              <button className="btn btn-primary" onClick={onUpgraded}>
+                Start writing
               </button>
             </div>
-            {devError && <p className="dev-error">{devError}</p>}
-          </div>
+          </>
+        ) : (
+          <>
+            <h2 id="upgrade-title" className="modal-title">
+              You&apos;ve filled your free workspace
+            </h2>
+            <p className="modal-sub">
+              The free plan holds five pages. Upgrade to Notion Notes Pro to
+              keep going.
+            </p>
+
+            <div className="tier-compare">
+              <div className="tier">
+                <span className="tier-name">Free</span>
+                <ul>
+                  <li>Up to 5 pages</li>
+                  <li>Clean writing &amp; autosave</li>
+                  <li>Sidebar navigation</li>
+                </ul>
+              </div>
+              <div className="tier tier-pro">
+                <span className="tier-name">
+                  Pro <span className="pro-pill">Pro</span>
+                </span>
+                <ul>
+                  <li>Unlimited pages</li>
+                  <li>Export any page as Markdown</li>
+                  <li>Export all pages as a zip</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn" onClick={onClose}>
+                Not now
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowDev((v) => !v)}
+              >
+                Upgrade to Pro
+              </button>
+            </div>
+
+            {showDev && (
+              <div className="dev-upgrade">
+                <p className="dev-note">
+                  Billing isn&apos;t wired up for this build. To unlock Pro for
+                  testing, paste the backend&apos;s admin token.
+                </p>
+                <div className="dev-row">
+                  <input
+                    className="dev-input"
+                    type="password"
+                    placeholder="ADMIN_TOKEN"
+                    value={adminToken}
+                    onChange={(e) => setAdminToken(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-primary"
+                    disabled={!adminToken.trim() || working}
+                    onClick={simulateUpgrade}
+                  >
+                    {working ? 'Unlocking…' : 'Unlock Pro'}
+                  </button>
+                </div>
+                {devError && <p className="dev-error">{devError}</p>}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

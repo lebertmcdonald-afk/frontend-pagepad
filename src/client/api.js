@@ -92,6 +92,29 @@ export async function deletePage(id) {
   return request(`/pages/${id}`, { method: 'DELETE' })
 }
 
+// Pro-only. Returns a Blob of the zip plus the suggested filename.
+// Throws ApiError(403) for free users and ApiError(404) when there are no pages.
+export async function exportAllPages() {
+  const token = getToken()
+  const res = await fetch(`${API}/pages/export-all`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    let parsed = null
+    try {
+      parsed = await res.json()
+    } catch {
+      /* no body */
+    }
+    throw new ApiError(res.status, parsed)
+  }
+  const blob = await res.blob()
+  const disposition = res.headers.get('Content-Disposition') || ''
+  const match = disposition.match(/filename="?([^"]+)"?/)
+  const filename = match ? match[1] : 'notion-notes.zip'
+  return { filename, blob }
+}
+
 // Pro-only. Throws ApiError(403) for free users. Returns { filename, markdown }.
 export async function exportPage(id, fallbackTitle = 'page') {
   const token = getToken()

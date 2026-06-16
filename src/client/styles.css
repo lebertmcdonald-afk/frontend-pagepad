@@ -137,6 +137,12 @@ body {
   background: var(--paper-raised);
   box-shadow: inset 0 0 0 1px var(--line);
 }
+.page-item-dragging {
+  opacity: 0.4;
+}
+.page-item-drop-target {
+  box-shadow: inset 0 2px 0 0 var(--accent);
+}
 .page-title {
   font-size: 14px;
   color: var(--ink);
@@ -230,8 +236,76 @@ body {
 }
 .meter-pro {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.meter-pro-head {
+  display: flex;
   align-items: center;
   gap: 8px;
+}
+.meter-export-all {
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.meter-export-all:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- Intro card (first-load tooltip) ---------- */
+.intro-card {
+  margin: 4px 12px 12px;
+  padding: 10px 12px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(43, 75, 111, 0.18);
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.intro-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  flex: 1;
+}
+.intro-card-body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.intro-card kbd {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+.intro-card-dismiss {
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.intro-card-dismiss:hover {
+  color: var(--ink);
 }
 
 /* Soft warning that appears as the free tier fills up.
@@ -520,6 +594,50 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+.modal-actions-single {
+  justify-content: center;
+}
+
+/* Post-upgrade confirmation view. */
+.success-badge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.unlocked-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.unlocked-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.unlocked-list strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.unlocked-bullet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .dev-upgrade {
