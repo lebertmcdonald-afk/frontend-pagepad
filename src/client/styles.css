@@ -195,6 +195,62 @@ body {
 .sidebar-foot {
   border-top: 1px solid var(--line);
   padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- Writing tracker ---------- */
+.tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.tracker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tracker-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+}
+.tracker-label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.tracker-count {
+  color: var(--ink);
+  font-weight: 600;
+}
+.tracker-strip {
+  display: flex;
+  gap: 5px;
+}
+.tracker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.tracker-dot-filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.tracker-dot-today {
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 .meter-dots {
   display: flex;
