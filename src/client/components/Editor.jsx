@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 function SaveIndicator({ state }) {
   const text =
@@ -6,8 +6,16 @@ function SaveIndicator({ state }) {
   return <span className={`save-indicator save-${state}`}>{text}</span>
 }
 
+function countWords(text) {
+  if (!text) return 0
+  const trimmed = text.trim()
+  if (!trimmed) return 0
+  return trimmed.split(/\s+/).length
+}
+
 export default function Editor({ page, onEdit, onExport, saveState, isPro }) {
   const bodyRef = useRef(null)
+  const wordCount = useMemo(() => countWords(page.content), [page.content])
 
   // Keep the textarea height matched to its content for a paper-like feel.
   useEffect(() => {
@@ -29,17 +37,18 @@ export default function Editor({ page, onEdit, onExport, saveState, isPro }) {
   return (
     <div className="editor">
       <div className="editor-bar">
-        <SaveIndicator state={saveState} />
+        <div className="editor-bar-left">
+          <SaveIndicator state={saveState} />
+          <span className="word-count" aria-label="Word count">
+            {wordCount} {wordCount === 1 ? 'word' : 'words'}
+          </span>
+        </div>
         <button
           className={isPro ? 'export-btn' : 'export-btn export-locked'}
           onClick={onExport}
-          title={
-            isPro
-              ? 'Export as Markdown'
-              : 'Export is a Pro feature'
-          }
+          title={isPro ? 'Export as Markdown' : 'Export is a Pro feature'}
         >
-          {isPro ? 'Export .md' : 'Export .md'}
+          Export .md
           {!isPro && <span className="lock" aria-hidden="true">🔒</span>}
         </button>
       </div>

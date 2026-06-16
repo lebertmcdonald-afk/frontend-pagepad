@@ -234,6 +234,31 @@ body {
   gap: 8px;
 }
 
+/* Soft warning that appears as the free tier fills up.
+   Near-limit (one page left) is a gentle nudge; at-limit is firmer. */
+.meter-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--gold);
+  line-height: 1.4;
+}
+.meter-hint-strong {
+  color: var(--danger);
+}
+.meter-hint-link {
+  border: none;
+  background: transparent;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.meter-near-limit .dot:not(.dot-filled) {
+  border-color: var(--gold);
+}
+
 .pro-pill {
   display: inline-block;
   background: var(--gold-soft);
@@ -261,7 +286,7 @@ body {
 .editor-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 14px;
   padding: 14px 28px;
   position: sticky;
@@ -270,12 +295,23 @@ body {
   z-index: 2;
 }
 
+.editor-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .save-indicator {
   font-size: 12px;
   color: var(--ink-faint);
   transition: opacity 0.2s ease;
   min-width: 48px;
-  text-align: right;
+}
+
+.word-count {
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
 }
 .save-saving {
   color: var(--ink-soft);
