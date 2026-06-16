@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import WritingTracker from './WritingTracker.jsx'
 
 // The signature element: five ink dots that fill as a free user uses pages.
 // When full, the meter becomes the upgrade nudge. Pro users see no meter.
@@ -218,6 +219,7 @@ export default function Sidebar({
       </nav>
 
       <div className="sidebar-foot">
+        <WritingTracker pages={pages} />
         <PageMeter
           pageCount={pageCount}
           pageLimit={pageLimit}
