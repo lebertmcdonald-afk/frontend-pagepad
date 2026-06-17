@@ -557,3 +557,130 @@ textarea:focus-visible {
     transition: none !important;
   }
 }
+
+/* ---------- Goal-Gradient Onboarding Progress Indicator ---------- */
+.onboarding {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-raised);
+  padding: 14px 32px 12px;
+  transition: opacity 0.5s ease;
+}
+
+.onboarding.onboarding-fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Progress bar track + fill */
+.onboarding-bar-track {
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.onboarding-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step chips row */
+.onboarding-steps {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.onboarding-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: color 0.25s ease;
+}
+
+.onboarding-step.step-done {
+  color: var(--accent);
+}
+
+.step-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  color: var(--ink-soft);
+}
+
+.step-done .step-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Contextual message + skip link */
+.onboarding-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onboarding-msg {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.onboarding-skip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  padding: 0;
+  text-decoration: underline;
+  flex-shrink: 0;
+}
+
+.onboarding-skip:hover {
+  color: var(--ink-soft);
+}
+
+/* Celebration / completion state */
+.onboarding-celebration {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  padding: 2px 0;
+}
+
+.celebration-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}

@@ -12,6 +12,7 @@ import {
 import Sidebar from './components/Sidebar.jsx'
 import Editor from './components/Editor.jsx'
 import UpgradeModal from './components/UpgradeModal.jsx'
+import OnboardingProgress from './components/OnboardingProgress.jsx'
 
 export default function App() {
   const [me, setMe] = useState(null) // { user, pageCount, pageLimit }
@@ -21,6 +22,16 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState('')
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved
   const [upgradeOpen, setUpgradeOpen] = useState(false)
+
+  // Onboarding: show only to first-time users, disappears permanently once done.
+  const [onboardingDone, setOnboardingDone] = useState(
+    () => !!localStorage.getItem('onboardingDone')
+  )
+  // Track whether autosave has fired at least once (step 3 of onboarding).
+  // Persisted to localStorage so it survives a page refresh.
+  const [hasSaved, setHasSaved] = useState(
+    () => !!localStorage.getItem('onboardingHasSaved')
+  )
 
   const saveTimer = useRef(null)
   const savedTimer = useRef(null)
@@ -54,6 +65,20 @@ export default function App() {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  // Promote saveState → hasSaved once autosave succeeds, and persist it.
+  useEffect(() => {
+    if (saveState === 'saved') {
+      setHasSaved(true)
+      localStorage.setItem('onboardingHasSaved', 'true')
+    }
+  }, [saveState])
+
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem('onboardingDone', 'true')
+    localStorage.removeItem('onboardingHasSaved') // no longer needed
+    setOnboardingDone(true)
   }, [])
 
   const refreshMe = useCallback(async () => {
@@ -182,6 +207,15 @@ export default function App() {
       />
 
       <main className="editor-pane">
+        {!onboardingDone && activePage && (
+          <OnboardingProgress
+            titled={!!(activePage.title?.trim())}
+            written={!!(activePage.content?.trim())}
+            saved={hasSaved}
+            onComplete={handleOnboardingComplete}
+            onDismiss={handleOnboardingComplete}
+          />
+        )}
         {activePage ? (
           <Editor
             key={activePage.id}
