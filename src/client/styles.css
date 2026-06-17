@@ -684,3 +684,8 @@ textarea:focus-visible {
   font-weight: 700;
   flex-shrink: 0;
 }
+
+.onboarding-msg-done {
+  color: var(--accent);
+  font-weight: 500;
+}
